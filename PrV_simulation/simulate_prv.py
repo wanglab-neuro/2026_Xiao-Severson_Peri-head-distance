@@ -33,14 +33,14 @@ def exponential_sampling(a, b, N, rate=5.0):
 
 
 def PrV(x1, x, M1, M2, w1, beta1, beta2, theta1, theta2,
-        E_local=0.1, I_local=0.0, I_long=None, bg=None):
+        E_local=0.1, I_local=0.0, I_long=None):
     """
     x1       : pre-tiled input for excitation, shape (B, M1)
     x        : original x (B,), only used for tiling inhibition
     M1, M2   : numbers of exc / inh inputs
     w1       : excitatory weights (M1,)
-    E_local  :
-    I_local  :
+    E_local  : local excitory weights (incr. shifts population toward proximity/map)
+    I_local  : local inhibitory weights (incr. shifts population toward suppressed)
     I_long   : long-range inhibitory weights (M2,)
     """
     def relu(x_):
@@ -61,7 +61,6 @@ def PrV(x1, x, M1, M2, w1, beta1, beta2, theta1, theta2,
     Z = (E - I_long_drive) / np.sqrt(M1)
 
     # Linearly sum inputs and outputs
-    # bg = np.random.rand() # background firing rate
     return Z + E_local - I_local
 
 
@@ -82,13 +81,13 @@ def main(
     path='.',
     seed=42,
     telc_inh_scale=0.5,
-    p_untuned=0.0,
+    p_untuned=0.4,
     weak_gain=0.01,
     strong_gain=1.0,
-    local_exc_gain=0.1,
-    local_inh_gain=1.0,
-    long_inh_gain=1.0,
-    return_suppressed=False,
+    local_exc_gain=1.0,
+    local_inh_gain=1.7,
+    long_inh_gain=10,
+    return_suppressed=True,
     fast=False,
 ):
     """
@@ -124,8 +123,7 @@ def main(
 
     # Timestamped results folder
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    # outdir = base_path / f"results_{timestamp}"
-    outdir = base_path / f"results"
+    outdir = base_path / f"results_{timestamp}"
     outdir.mkdir(parents=True, exist_ok=True)
 
     # Stimulus space: distance bins
@@ -142,7 +140,6 @@ def main(
     for _ in range(N):
         # Sample number of long-range inhibitory inputs
         M2 = sample_discrete_exp_numpy(int(M1), 0.5) # 0.03
-        # print(f"M1={M1} M2={M2}")
 
         # Excitatory / long-range inhibitory weights and TG parameters
         w1 = strong_gain * np.random.rand(M1)
@@ -196,9 +193,6 @@ def main(
             )
             PrV_record_telc.append(telc_resp)
 
-    # print(f"Simulation took {time.perf_counter() - ts} sec")
-    ts = time.perf_counter()
-
     # Convert to arrays
     print('Analyzing models for wild-type condition ... ')
     PrV_record_control = np.array(PrV_record_control)
@@ -242,8 +236,11 @@ def main(
             return_suppressed=return_suppressed
         )
 
-    # print(f"Analysis took {time.perf_counter() - ts} sec")
-    ts = time.perf_counter()
+    print(f"Simulation and analysis finished in {(time.perf_counter() - ts):.2f} seconds.")
+    if not fast:
+        print(f"Plotting and saving figures. This may take some time...")
+    else:
+        print(f"Plotting and saving figures.")
 
     # Plot control condition
     plot(
@@ -270,7 +267,6 @@ def main(
             save_svg=not fast,
         )
 
-    # print(f"Plotting/saving figures took {time.perf_counter() - ts} sec")
     print(f"Done! Figures saved in {outdir}")
 
 
@@ -285,9 +281,6 @@ if __name__ == "__main__":
 
     parser.add_argument("--path", type=str, default=".",
         help="Parent directory for saving results (default: current directory).")
-
-    parser.add_argument("--telc", action="store_true",
-        help="Also simulate TeLC condition (scaled long-range inhibition).")
 
     parser.add_argument("--seed", type=int, default=42,
         help="Random seed (default: 42).")
@@ -304,21 +297,23 @@ if __name__ == "__main__":
     parser.add_argument("--weak_gain", type=float, default=0.01,
         help="Scaling for weights of weakly tuned neurons (default: 0.01).",)
 
-    parser.add_argument("--local_exc_gain", type=float, default=0.1,
-        help="Strength of local (TeLC-insensitive) excitation (default: 0.1).",)
+    parser.add_argument("--local_exc_gain", type=float, default=1.0,
+        help="Strength of local (TeLC-insensitive) excitation (default: 1.0).",)
 
-    parser.add_argument("--local_inh_gain", type=float, default=1.0,
-        help="Strength of local (TeLC-insensitive) inhibition (default: 1.0).",)
+    parser.add_argument("--local_inh_gain", type=float, default=1.7,
+        help="Strength of local (TeLC-insensitive) inhibition (default: 1.7).",)
 
-    parser.add_argument("--long_inh_gain", type=float, default=1.0,
-        help="Strength of long (TeLC-sensitive) inhibition (default: 1.0).",)
+    parser.add_argument("--long_inh_gain", type=float, default=10,
+        help="Strength of long (TeLC-sensitive) inhibition (default: 10).",)
 
-    parser.add_argument("--return_suppressed", action="store_true",
-        help="Also return number of suppressed neurons (otherwise include in untuned; default: False).")
+    parser.add_argument("--return_suppressed", action="store_false",
+        help="Also return number of suppressed neurons (otherwise include in untuned; default: True).")
 
     parser.add_argument("--fast", action="store_true",
         help="Fast mode: no example tuning curves, no SVG export.")
 
+    parser.add_argument("--telc", action="store_true",
+        help="Also simulate TeLC condition (scaled long-range inhibition).")
 
 
     args = parser.parse_args()

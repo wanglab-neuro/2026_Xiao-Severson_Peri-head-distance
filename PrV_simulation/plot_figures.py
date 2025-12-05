@@ -220,4 +220,4 @@ def plot_unit_heatmap(resp, x_values, title, path, suffix="", save_svg=False):
     plt.close(fig)
 
     # Dump source data into CSV for plotting into matlab
-    np.savetxt(path / 'heatmap_data.csv', resp_sorted, delimiter=',')
+    np.savetxt(path / f"heatmap{suffix}.csv", resp_sorted, delimiter=',')
