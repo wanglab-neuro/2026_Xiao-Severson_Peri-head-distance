@@ -151,9 +151,23 @@ def plot(
             for uid in sel:
                 x = np.arange(B)
                 y = selected_curves[uid]
-                fig, ax = plt.subplots(figsize=(2.2, 1.8))
-                ax.plot(x, y, color='k', lw=1.2)
-                ax.scatter(x, y, c=bin_colors, s=12, linewidths=0.25, zorder=3)
+
+                fig, ax = plt.subplots(figsize=(2.0, 2.0))
+                ax.set_box_aspect(1)  # square axes
+
+                # Line
+                ax.plot(x, y, color='k', lw=1.2, zorder=2)
+
+                # Points: one artist per point, no clipping
+                for xi, yi, ci in zip(x, y, bin_colors):
+                    ax.scatter(
+                        [xi], [yi],
+                        c=[ci],
+                        s=12,
+                        linewidths=0.25,
+                        zorder=3,
+                        clip_on=False,   # <- this avoids axes clipPath for this marker
+                    )
 
                 ax.set_xlabel("Distance Bin", fontsize=8)
                 ax.set_ylabel("Net Activity", fontsize=8)
@@ -163,10 +177,14 @@ def plot(
                 ax.spines['right'].set_visible(False)
                 fig.tight_layout()
 
-                fig.savefig(outdir / f"example_bin{c:02d}_unit{int(uid):05d}.png")
+                fig.savefig(outdir / f"example_bin{c:02d}_unit{int(uid):05d}.png", dpi=300)
                 if save_svg:
-                    fig.savefig(outdir / f"example_bin{c:02d}_unit{int(uid):05d}.svg")
+                    fig.savefig(
+                        outdir / f"example_bin{c:02d}_unit{int(uid):05d}.svg",
+                        format="svg"
+                    )
                 plt.close(fig)
+
 
 
     # ---- Heatmap ---- #
