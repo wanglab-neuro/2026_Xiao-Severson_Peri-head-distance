@@ -6,34 +6,38 @@ This repository contains a simple simulation of PrV neurons receiving excitatory
 
 1. **Clone or download** this repository.
 cd /d C:\Code
+```
 git clone https://github.com/wanglab-neuro/2026_Xiao-Severson_Peri-head-distance
+```
 
-2. (Optional but recommended) Create and activate a virtual environment:
+3. (Optional but recommended) Create and activate a virtual environment:
+```
 conda create -n prv
 conda activate prv
+```
 
-Install dependencies:
+4.  Install dependencies:
+```
 pip install numpy scipy matplotlib
+```
 
 Make sure the following files are in the current directory:
-cd /d C:\Code
+```
+cd ./PrV_simulation
+```
+
 simulate_prv.py (this script)
 plot_figures.py
 analysis.py
-
-## Requirements
-- Python 3.8+
-- Packages:
-  - `numpy`
-  - `matplotlib`
-  - `scipy`
 
 ## Usage
 Run the simulation from the command line:
 python simulate_prv.py [OPTIONS]
 
 Example
+```
 python simulate_prv.py --telc
+```
 This will run the simulation, perform analysis, and save the generated figures/results under ./results_YYYYMMDD_HHMMSS
 
 Options
