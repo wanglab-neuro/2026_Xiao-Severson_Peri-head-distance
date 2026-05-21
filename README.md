@@ -1,6 +1,6 @@
 # Xiao, Severson, et al. Peri-head distance coding in the mouse brainstem - Code Repository
 
-[![DOI](https://zenodo.org/badge/1110081011.svg)](https://doi.org/10.5281/zenodo.20330278)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20330279.svg)](https://doi.org/10.5281/zenodo.20330279)
 
 Original code for Xiao & Severson et al., 2026: **"Peri-head distance coding in the mouse brainstem"**.
 
